@@ -1,0 +1,2 @@
+# dps-history
+Denops history
