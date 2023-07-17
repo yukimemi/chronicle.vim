@@ -1,7 +1,7 @@
 // =============================================================================
 // File        : main.ts
 // Author      : yukimemi
-// Last Change : 2023/07/17 20:34:21.
+// Last Change : 2023/07/17 22:35:08.
 // =============================================================================
 
 import * as autocmd from "https://deno.land/x/denops_std@v5.0.1/autocmd/mod.ts";
@@ -43,13 +43,14 @@ async function addChronoData(chronoPath: string, addPath: string): Promise<boole
     if (!(await fs.exists(addPath))) {
       return false;
     }
+    const normalizedAddPath = path.normalize(addPath);
     if (await fs.exists(chronoPath)) {
-      const lines = (await getChronoData(chronoPath)).filter((x) => x !== addPath);
-      lines.push(addPath);
+      const lines = (await getChronoData(chronoPath)).filter((x) => x !== normalizedAddPath);
+      lines.push(normalizedAddPath);
       await setChronoData(chronoPath, lines);
       return true;
     }
-    await setChronoData(chronoPath, [addPath]);
+    await setChronoData(chronoPath, [normalizedAddPath]);
     return true;
   } catch (e) {
     console.error(e);
