@@ -9,9 +9,9 @@ const code = (await (await fetch(
 );
 const pod = await lua.doString(code);
 
-const src = await Deno.readTextFile("./pod/history.pod");
+const src = await Deno.readTextFile("./pod/chronicle.pod");
 
-const doc = "./doc/history.txt";
+const doc = "./doc/chronicle.txt";
 await Deno.writeTextFile(doc, await pod.process("vimdoc", src));
 
 const readme = "./README.md";

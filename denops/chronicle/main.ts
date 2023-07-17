@@ -1,7 +1,7 @@
 // =============================================================================
 // File        : main.ts
 // Author      : yukimemi
-// Last Change : 2023/07/17 17:12:23.
+// Last Change : 2023/07/17 18:05:02.
 // =============================================================================
 
 import * as autocmd from "https://deno.land/x/denops_std@v5.0.1/autocmd/mod.ts";
@@ -23,43 +23,47 @@ let addEcho = true;
 let addNotify = false;
 let ignoreFileTypes = ["log"];
 const home = ensure(dir("home"), is.String);
-const histDir = path.join(home, ".cache", "dps-history");
-let readPath = path.join(histDir, "read");
-let writePath = path.join(histDir, "write");
+const chronoDir = path.join(home, ".cache", "dps-chronicle");
+let readPath = path.join(chronoDir, "read");
+let writePath = path.join(chronoDir, "write");
 
 const lock = new Semaphore(1);
 
-async function getHistoryData(historyPath: string) {
-  return (await Deno.readTextFile(historyPath)).split(/\r?\n/);
+async function getChronoData(chronoPath: string) {
+  return (await Deno.readTextFile(chronoPath)).split(/\r?\n/);
 }
 
-async function setHistoryData(historyPath: string, lines: string[]) {
-  await fs.ensureDir(path.dirname(historyPath));
-  await Deno.writeTextFile(historyPath, lines.join("\n"));
+async function setChronoData(chronoPath: string, lines: string[]) {
+  await fs.ensureDir(path.dirname(chronoPath));
+  await Deno.writeTextFile(chronoPath, lines.join("\n"));
 }
 
-async function addHistoryData(historyPath: string, addPath: string) {
+async function addChronoData(chronoPath: string, addPath: string): Promise<boolean> {
   try {
     if (!(await fs.exists(addPath))) {
-      return;
+      return false;
     }
-    if (await fs.exists(historyPath)) {
-      const lines = await getHistoryData(historyPath);
+    if (await fs.exists(chronoPath)) {
+      const lines = await getChronoData(chronoPath);
       if (!lines.includes(addPath)) {
         lines.push(addPath);
-        await setHistoryData(historyPath, lines);
+        await setChronoData(chronoPath, lines);
+        return true;
       }
     } else {
-      await setHistoryData(historyPath, [addPath]);
+      await setChronoData(chronoPath, [addPath]);
+      return true;
     }
+    return false;
   } catch (e) {
     console.error(e);
+    return false;
   }
 }
 
 export async function main(denops: Denops): Promise<void> {
   // debug.
-  debug = await vars.g.get(denops, "history_debug", debug);
+  debug = await vars.g.get(denops, "chronicle_debug", debug);
   // deno-lint-ignore no-explicit-any
   const clog = (...data: any[]): void => {
     if (debug) {
@@ -68,16 +72,22 @@ export async function main(denops: Denops): Promise<void> {
   };
 
   // Merge user config.
-  enable = await vars.g.get(denops, "history_enable", enable);
-  addEcho = await vars.g.get(denops, "history_echo", addEcho);
-  addNotify = await vars.g.get(denops, "history_notify", addNotify);
+  enable = await vars.g.get(denops, "chronicle_enable", enable);
+  addEcho = await vars.g.get(denops, "chronicle_echo", addEcho);
+  addNotify = await vars.g.get(denops, "chronicle_notify", addNotify);
   ignoreFileTypes = await vars.g.get(
     denops,
-    "history_ignore_filetypes",
+    "chronicle_ignore_filetypes",
     ignoreFileTypes,
   );
-  readPath = await vars.g.get(denops, "history_read_path", readPath);
-  writePath = await vars.g.get(denops, "history_write_path", writePath);
+  readPath = ensure(
+    await fn.expand(denops, await vars.g.get(denops, "chronicle_read_path", readPath)),
+    is.String,
+  );
+  writePath = ensure(
+    await fn.expand(denops, await vars.g.get(denops, "chronicle_write_path", writePath)),
+    is.String,
+  );
 
   clog({
     debug,
@@ -90,12 +100,12 @@ export async function main(denops: Denops): Promise<void> {
   });
 
   denops.dispatcher = {
-    async history(historyPath: unknown): Promise<void> {
+    async chronicle(chronoPath: unknown): Promise<void> {
       try {
         await lock.lock(async () => {
-          assert(historyPath, is.String);
+          assert(chronoPath, is.String);
           if (!enable) {
-            clog(`history skip ! enable: [${enable}]`);
+            clog(`chronicle skip ! enable: [${enable}]`);
             return;
           }
           // Get filetype and fileformat.
@@ -107,18 +117,21 @@ export async function main(denops: Denops): Promise<void> {
 
           // Get buffer path.
           const bufPath = ensure(await fn.expand(denops, "%:p"), is.String);
-          clog(`addHistoryData: (${historyPath}, ${bufPath})`);
-          await addHistoryData(historyPath, bufPath);
+          clog(`addChronoData: (${chronoPath}, ${bufPath})`);
+          if (!(await addChronoData(chronoPath, bufPath))) {
+            return;
+          }
 
+          const msg = `add [${bufPath}] to chronicle.`;
           if (addEcho) {
-            console.log(`add [${bufPath}] to history.`);
-            await helper.echo(denops, `add [${bufPath}] to history.`);
+            console.log(msg);
+            await helper.echo(denops, msg);
           }
 
           if (addNotify && denops.meta.host === "nvim") {
             await helper.execute(
               denops,
-              `lua vim.notify([[add ${bufPath} to history.]], vim.log.levels.INFO)`,
+              `lua vim.notify([[${msg}]], vim.log.levels.INFO)`,
             );
           }
         });
@@ -130,33 +143,32 @@ export async function main(denops: Denops): Promise<void> {
     async open(path: unknown): Promise<void> {
       try {
         assert(path, is.String);
-        const lines = await getHistoryData(path);
+        const lines = await getChronoData(path);
         await batch(denops, async (denops) => {
           await fn.setqflist(denops, [], "r");
           await fn.setqflist(denops, [], "a", {
-            title: `[history] ${path}`,
+            title: `[chronicle] ${path}`,
             efm: "%f",
             lines: lines,
           });
         });
         await denops.cmd("botright copen");
       } catch (e) {
-        await denops.cmd(`echom "Error ${e}"`);
-        clog(e);
+        console.error(e);
       }
     },
 
     // deno-lint-ignore require-await
     async change(e: unknown): Promise<void> {
       assert(e, is.Boolean);
-      console.log(`History change: ${e}`);
+      console.log(`Chronicle change: ${e}`);
       enable = e;
     },
 
-    async reset(historyPath: unknown): Promise<void> {
-      assert(historyPath, is.String);
+    async reset(chronoPath: unknown): Promise<void> {
+      assert(chronoPath, is.String);
 
-      const msg = `Remove: ${historyPath}`;
+      const msg = `Remove: ${chronoPath}`;
 
       if (addEcho) {
         console.log(msg);
@@ -170,7 +182,7 @@ export async function main(denops: Denops): Promise<void> {
         );
       }
 
-      await Deno.remove(historyPath);
+      await Deno.remove(chronoPath);
     },
   };
 
@@ -180,13 +192,13 @@ export async function main(denops: Denops): Promise<void> {
       function! s:${denops.name}_notify(method, params) abort
         call denops#plugin#wait_async('${denops.name}', function('denops#notify', ['${denops.name}', a:method, a:params]))
       endfunction
-      command! EnableHistory call s:${denops.name}_notify('change', [v:true])
-      command! DisableHistory call s:${denops.name}_notify('change', [v:false])
-      command! OpenHistoryWrite call s:${denops.name}_notify('open', ['${writePath}'])
-      command! OpenHistoryRead call s:${denops.name}_notify('open', ['${readPath}'])
-      command! ResetHistoryWrite call s:${denops.name}_notify('reset', ['${writePath}'])
-      command! ResetHistoryRead call s:${denops.name}_notify('reset', ['${readPath}'])
-  `,
+      command! EnableChronicle call s:${denops.name}_notify('change', [v:true])
+      command! DisableChronicle call s:${denops.name}_notify('change', [v:false])
+      command! OpenChronicleWrite call s:${denops.name}_notify('open', ['${writePath}'])
+      command! OpenChronicleRead call s:${denops.name}_notify('open', ['${readPath}'])
+      command! ResetChronicleWrite call s:${denops.name}_notify('reset', ['${writePath}'])
+      command! ResetChronicleRead call s:${denops.name}_notify('reset', ['${readPath}'])
+    `,
   );
 
   await autocmd.group(denops, denops.name, (helper) => {
@@ -194,14 +206,14 @@ export async function main(denops: Denops): Promise<void> {
     helper.define(
       "BufWritePost",
       "*",
-      `call s:${denops.name}_notify('history', ['${writePath}'])`,
+      `call s:${denops.name}_notify('chronicle', ['${writePath}'])`,
     );
     helper.define(
-      "BufRead",
+      ["BufWritePost", "BufRead"],
       "*",
-      `call s:${denops.name}_notify('history', ['${readPath}'])`,
+      `call s:${denops.name}_notify('chronicle', ['${readPath}'])`,
     );
   });
 
-  clog("dps-history has loaded");
+  clog("dps-chronicle has loaded");
 }
