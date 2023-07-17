@@ -1,7 +1,7 @@
 // =============================================================================
 // File        : main.ts
 // Author      : yukimemi
-// Last Change : 2023/07/17 18:05:02.
+// Last Change : 2023/07/17 18:39:00.
 // =============================================================================
 
 import * as autocmd from "https://deno.land/x/denops_std@v5.0.1/autocmd/mod.ts";
@@ -140,14 +140,14 @@ export async function main(denops: Denops): Promise<void> {
       }
     },
 
-    async open(path: unknown): Promise<void> {
+    async open(chronoPath: unknown): Promise<void> {
       try {
-        assert(path, is.String);
-        const lines = await getChronoData(path);
+        assert(chronoPath, is.String);
+        const lines = (await getChronoData(chronoPath)).reverse();
         await batch(denops, async (denops) => {
           await fn.setqflist(denops, [], "r");
           await fn.setqflist(denops, [], "a", {
-            title: `[chronicle] ${path}`,
+            title: `[chronicle] ${chronoPath}`,
             efm: "%f",
             lines: lines,
           });
