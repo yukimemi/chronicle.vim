@@ -1,6 +1,7 @@
 *dps-chronicle.txt*                                          Denops Chronicle
 =============================================================================
-dps-chronicle~
+dps-chronicle ~
+                                                              *dps-chronicle*
 
 Denops Chronicle
 

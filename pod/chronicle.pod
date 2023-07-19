@@ -5,7 +5,7 @@ description: Denops Chronicle
 
 =pod
 
-=head1 dps-chronicle
+=head1 dps-chronicle X<dps-chronicle>
 
 Denops Chronicle
 
