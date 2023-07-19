@@ -69,6 +69,14 @@ Remove `g:chronicle_read_path`.
 `:ResetChronicleWrite`                                  
 Remove `g:chronicle_write_path`.
 
+# Functions 
+
+`chronicle#read#list()`                                
+Get list of `g:chronicle_read_path`.
+
+`chronicle#write#list()`                              
+Get list of `g:chronicle_write_path`.
+
 # Config 
 
 No settings are required. However, the following settings can be made if necessary.

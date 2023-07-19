@@ -82,6 +82,16 @@ Remove `g:chronicle_read_path`.
 Remove `g:chronicle_write_path`.
 
 =============================================================================
+Functions ~
+                                                        *chronicle-functions*
+
+`chronicle#read#list()`                                *chronicle#read#list()*
+Get list of `g:chronicle_read_path`.
+
+`chronicle#write#list()`                              *chronicle#write#list()*
+Get list of `g:chronicle_write_path`.
+
+=============================================================================
 Config ~
                                                            *chronicle-config*
 

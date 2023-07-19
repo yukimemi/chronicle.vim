@@ -1,7 +1,7 @@
 // =============================================================================
 // File        : main.ts
 // Author      : yukimemi
-// Last Change : 2023/07/19 23:38:03.
+// Last Change : 2023/07/20 00:04:54.
 // =============================================================================
 
 import * as autocmd from "https://deno.land/x/denops_std@v5.0.1/autocmd/mod.ts";
@@ -186,6 +186,13 @@ export async function main(denops: Denops): Promise<void> {
       }
 
       await Deno.remove(chronoPath);
+    },
+
+    async listRead(): Promise<string[]> {
+      return await getChronoData(readPath);
+    },
+    async listWrite(): Promise<string[]> {
+      return await getChronoData(writePath);
     },
   };
 

@@ -76,6 +76,14 @@ Remove `g:chronicle_read_path`.
 C<:ResetChronicleWrite>                                  X<:ResetChronicleWrite>
 Remove `g:chronicle_write_path`.
 
+=head1 Functions X<chronicle-functions>
+
+C<chronicle#read#list()>                                X<chronicle#read#list()>
+Get list of `g:chronicle_read_path`.
+
+C<chronicle#write#list()>                              X<chronicle#write#list()>
+Get list of `g:chronicle_write_path`.
+
 =head1 Config X<chronicle-config>
 
 No settings are required. However, the following settings can be made if necessary.
