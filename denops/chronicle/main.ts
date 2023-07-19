@@ -1,7 +1,7 @@
 // =============================================================================
 // File        : main.ts
 // Author      : yukimemi
-// Last Change : 2023/07/17 23:02:58.
+// Last Change : 2023/07/19 23:33:48.
 // =============================================================================
 
 import * as autocmd from "https://deno.land/x/denops_std@v5.0.1/autocmd/mod.ts";
@@ -21,7 +21,7 @@ let debug = false;
 let enable = true;
 let addEcho = true;
 let addNotify = false;
-let ignoreFileTypes = ["log"];
+let ignoreFileTypes = ["log", "gitcommit"];
 const home = ensure(dir("home"), is.String);
 const chronoDir = path.join(home, ".cache", "dps-chronicle");
 let readPath = path.join(chronoDir, "read");

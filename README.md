@@ -79,7 +79,7 @@ default is v:false
 
 `g:chronicle_ignore_filetypes`                  
 A list of filetypes to be ignored.
-default is ["log"]
+default is ["log", "gitcommit"]
 
 `g:chronicle_echo`                                          
 Whether to output echo messages when adding to chronicle list.
