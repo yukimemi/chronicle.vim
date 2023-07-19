@@ -1,7 +1,7 @@
 // =============================================================================
 // File        : main.ts
 // Author      : yukimemi
-// Last Change : 2023/07/19 23:33:48.
+// Last Change : 2023/07/19 23:38:03.
 // =============================================================================
 
 import * as autocmd from "https://deno.land/x/denops_std@v5.0.1/autocmd/mod.ts";
@@ -30,7 +30,9 @@ let writePath = path.join(chronoDir, "write");
 const lock = new Semaphore(1);
 
 async function getChronoData(chronoPath: string) {
-  return (await Deno.readTextFile(chronoPath)).split(/\r?\n/);
+  return (await Deno.readTextFile(chronoPath)).split(/\r?\n/).filter(
+    (x) => x !== "",
+  );
 }
 
 async function setChronoData(chronoPath: string, lines: string[]) {
