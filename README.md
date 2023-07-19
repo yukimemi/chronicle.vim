@@ -10,7 +10,8 @@ dps-chronicle is a Vim plugin that record opened files and saved files in the sp
 
 If you use [folke/lazy.nvim](https://github.com/folke/lazy.nvim).
 
-```
+```lua
+
   {
     "yukimemi/dps-chronicle",
     lazy = false,
@@ -18,12 +19,15 @@ If you use [folke/lazy.nvim](https://github.com/folke/lazy.nvim).
       "vim-denops/denops.vim",
     },
   }
+
 ```
 
 If you use [yukimemi/dvpm](https://github.com/yukimemi/dvpm).
 
-```
+```typescript
+
   dvpm.add({ url: "yukimemi/dps-chronicle" });
+
 ```
 
 # Requirements 
@@ -95,7 +99,8 @@ default is `~/.cache/dps-chronicle/write`
 
 # Example 
 
-```
+```vim
+
   let g:chronicle_debug = v:false
   let g:chronicle_echo = v:false
   let g:chronicle_notify = v:true
@@ -104,6 +109,7 @@ default is `~/.cache/dps-chronicle/write`
   let g:chronicle_write_path = "~/.cache/chronicle/write"
   nnoremap mr <cmd>OpenChronicleRead<cr>
   nnoremap mw <cmd>OpenChronicleWrite<cr>
+
 ```
 
 # Special thanks 
