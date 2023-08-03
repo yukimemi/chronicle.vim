@@ -1,7 +1,7 @@
 // =============================================================================
 // File        : main.ts
 // Author      : yukimemi
-// Last Change : 2023/07/20 00:27:15.
+// Last Change : 2023/08/03 22:09:48.
 // =============================================================================
 
 import * as autocmd from "https://deno.land/x/denops_std@v5.0.1/autocmd/mod.ts";
@@ -29,10 +29,12 @@ let writePath = path.join(chronoDir, "write");
 
 const lock = new Semaphore(1);
 
-async function getChronoData(chronoPath: string) {
-  return (await Deno.readTextFile(chronoPath)).split(/\r?\n/).filter(
-    (x) => x !== "",
-  ).reverse();
+async function getChronoData(chronoPath: string, reverse = true): Promise<string[]> {
+  const lines = (await Deno.readTextFile(chronoPath)).split(/\r?\n/).filter((x) => x !== "");
+  if (reverse) {
+    return lines.reverse();
+  }
+  return lines;
 }
 
 async function setChronoData(chronoPath: string, lines: string[]) {
@@ -51,7 +53,7 @@ async function addChronoData(chronoPath: string, addPath: string): Promise<boole
     }
     const nap = normalizedAddPath(addPath);
     if (await fs.exists(chronoPath)) {
-      const lines = (await getChronoData(chronoPath)).filter((x) => x !== nap);
+      const lines = (await getChronoData(chronoPath, false)).filter((x) => x !== nap);
       lines.push(nap);
       await setChronoData(chronoPath, lines);
       return true;
@@ -152,7 +154,7 @@ export async function main(denops: Denops): Promise<void> {
           await fn.setqflist(denops, [], "a", {
             title: `[chronicle] ${chronoPath}`,
             efm: "%f",
-            lines: lines,
+            lines,
           });
         });
         await denops.cmd("botright copen");
