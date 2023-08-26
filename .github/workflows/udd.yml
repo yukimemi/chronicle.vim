@@ -50,5 +50,6 @@ jobs:
 
             </div></details>
           branch: udd-update
+          labels: automerge
           author: GitHub <noreply@github.com>
           delete-branch: true
