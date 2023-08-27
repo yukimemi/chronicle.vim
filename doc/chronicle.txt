@@ -18,23 +18,19 @@ Installation ~
 If you use folke/lazy.nvim |https://github.com/folke/lazy.nvim|.
 
 >
-
-  {
-    "yukimemi/dps-chronicle",
-    lazy = false,
-    dependencies = {
-      "vim-denops/denops.vim",
-    },
-  }
-
+	{
+	    "yukimemi/dps-chronicle",
+	    lazy = false,
+	    dependencies = {
+	      "vim-denops/denops.vim",
+	    },
+	  }
 <
 
 If you use yukimemi/dvpm |https://github.com/yukimemi/dvpm|.
 
 >
-
-  dvpm.add({ url: "yukimemi/dps-chronicle" });
-
+	dvpm.add({ url: "yukimemi/dps-chronicle" });
 <
 
 =============================================================================
@@ -127,16 +123,14 @@ Example ~
                                                           *chronicle-example*
 
 >
-
-  let g:chronicle_debug = v:false
-  let g:chronicle_echo = v:false
-  let g:chronicle_notify = v:true
-  let g:chronicle_ignore_filetypes = ["csv", "log"]
-  let g:chronicle_read_path = "~/.cache/chronicle/read"
-  let g:chronicle_write_path = "~/.cache/chronicle/write"
-  nnoremap mr <cmd>OpenChronicleRead<cr>
-  nnoremap mw <cmd>OpenChronicleWrite<cr>
-
+	let g:chronicle_debug = v:false
+	  let g:chronicle_echo = v:false
+	  let g:chronicle_notify = v:true
+	  let g:chronicle_ignore_filetypes = ["csv", "log"]
+	  let g:chronicle_read_path = "~/.cache/chronicle/read"
+	  let g:chronicle_write_path = "~/.cache/chronicle/write"
+	  nnoremap mr <cmd>OpenChronicleRead<cr>
+	  nnoremap mw <cmd>OpenChronicleWrite<cr>
 <
 
 =============================================================================
