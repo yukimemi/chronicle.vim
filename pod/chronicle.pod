@@ -112,6 +112,10 @@ C<g:chronicle_write_path>                              X<g:chronicle_write_path>
 The path saved on BufWritePost event.
 default is `~/.cache/dps-chronicle/write`
 
+C<g:chronicle_throttle_interval>                X<g:chronicle_throttle_interval>
+The throttle interval miliseconds of adding to chronicle list.
+default is 500
+
 =head1 Example X<chronicle-example>
 
 =begin vim

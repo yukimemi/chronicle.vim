@@ -1,7 +1,7 @@
 // =============================================================================
 // File        : main.ts
 // Author      : yukimemi
-// Last Change : 2023/11/02 00:20:52.
+// Last Change : 2023/11/05 10:28:44.
 // =============================================================================
 
 import * as autocmd from "https://deno.land/x/denops_std@v5.0.1/autocmd/mod.ts";
@@ -26,8 +26,10 @@ const home = ensure(dir("home"), is.String);
 const chronoDir = path.join(home, ".cache", "dps-chronicle");
 let readPath = path.join(chronoDir, "read");
 let writePath = path.join(chronoDir, "write");
+let interval = 500;
 
 const lock = new Semaphore(1);
+const cache = new Map<string, number>();
 
 async function getChronoData(chronoPath: string, reverse = true): Promise<string[]> {
   const lines = (await Deno.readTextFile(chronoPath)).split(/\r?\n/).filter((x) => x !== "");
@@ -93,6 +95,7 @@ export async function main(denops: Denops): Promise<void> {
     await fn.expand(denops, await vars.g.get(denops, "chronicle_write_path", writePath)),
     is.String,
   );
+  interval = ensure(await vars.g.get(denops, "chronicle_throttle_interval", interval), is.Number);
 
   clog({
     debug,
@@ -102,6 +105,7 @@ export async function main(denops: Denops): Promise<void> {
     ignoreFileTypes,
     readPath,
     writePath,
+    interval,
   });
 
   denops.dispatcher = {
@@ -122,6 +126,15 @@ export async function main(denops: Denops): Promise<void> {
 
           // Get buffer path.
           const bufPath = ensure(await fn.expand(denops, "%:p"), is.String);
+          const key = `${chronoPath}:${bufPath}`;
+          const lastExecuted = cache.get(key);
+          const now = (new Date()).getTime();
+          if (lastExecuted && now - lastExecuted < interval) {
+            clog(`skip: [${bufPath}]`);
+            return;
+          }
+          cache.set(key, (new Date()).getTime());
+
           clog(`addChronoData: (${chronoPath}, ${bufPath})`);
           if (!(await addChronoData(chronoPath, bufPath))) {
             return;

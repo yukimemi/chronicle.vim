@@ -101,6 +101,10 @@ default is `~/.cache/dps-chronicle/read`
 The path saved on BufWritePost event.
 default is `~/.cache/dps-chronicle/write`
 
+`g:chronicle_throttle_interval`                
+The throttle interval miliseconds of adding to chronicle list.
+default is 500
+
 # Example 
 
 ```vim
