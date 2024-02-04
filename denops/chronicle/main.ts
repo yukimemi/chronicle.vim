@@ -4,16 +4,16 @@
 // Last Change : 2023/11/05 10:28:44.
 // =============================================================================
 
-import * as autocmd from "https://deno.land/x/denops_std@v5.3.0/autocmd/mod.ts";
-import * as fn from "https://deno.land/x/denops_std@v5.3.0/function/mod.ts";
+import * as autocmd from "https://deno.land/x/denops_std@v6.0.0/autocmd/mod.ts";
+import * as fn from "https://deno.land/x/denops_std@v6.0.0/function/mod.ts";
 import * as fs from "https://deno.land/std@0.214.0/fs/mod.ts";
-import * as helper from "https://deno.land/x/denops_std@v5.3.0/helper/mod.ts";
-import * as op from "https://deno.land/x/denops_std@v5.3.0/option/mod.ts";
+import * as helper from "https://deno.land/x/denops_std@v6.0.0/helper/mod.ts";
+import * as op from "https://deno.land/x/denops_std@v6.0.0/option/mod.ts";
 import * as path from "https://deno.land/std@0.214.0/path/mod.ts";
-import * as vars from "https://deno.land/x/denops_std@v5.3.0/variable/mod.ts";
-import { batch } from "https://deno.land/x/denops_std@v5.3.0/batch/mod.ts";
+import * as vars from "https://deno.land/x/denops_std@v6.0.0/variable/mod.ts";
+import { batch } from "https://deno.land/x/denops_std@v6.0.0/batch/mod.ts";
 import dir from "https://deno.land/x/dir@1.5.2/mod.ts";
-import type { Denops } from "https://deno.land/x/denops_std@v5.3.0/mod.ts";
+import type { Denops } from "https://deno.land/x/denops_std@v6.0.0/mod.ts";
 import { Semaphore } from "https://deno.land/x/async@v2.1.0/mod.ts";
 import { assert, ensure, is } from "https://deno.land/x/unknownutil@v3.14.1/mod.ts";
 
