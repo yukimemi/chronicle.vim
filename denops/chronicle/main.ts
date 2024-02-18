@@ -1,7 +1,7 @@
 // =============================================================================
 // File        : main.ts
 // Author      : yukimemi
-// Last Change : 2023/11/05 10:28:44.
+// Last Change : 2024/02/18 20:48:28.
 // =============================================================================
 
 import * as autocmd from "https://deno.land/x/denops_std@v6.0.1/autocmd/mod.ts";
@@ -23,7 +23,7 @@ let addEcho = true;
 let addNotify = false;
 let ignoreFileTypes = ["log", "gitcommit"];
 const home = ensure(dir("home"), is.String);
-const chronoDir = path.join(home, ".cache", "dps-chronicle");
+const chronoDir = path.join(home, ".cache", "chronicle");
 let readPath = path.join(chronoDir, "read");
 let writePath = path.join(chronoDir, "write");
 let interval = 500;
@@ -239,5 +239,5 @@ export async function main(denops: Denops): Promise<void> {
     );
   });
 
-  clog("dps-chronicle has loaded");
+  clog("chronicle.vim has loaded");
 }

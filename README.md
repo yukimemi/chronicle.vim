@@ -1,10 +1,10 @@
-# dps-chronicle 
+# chronicle 
 
 Denops Chronicle
 
 # Features 
 
-dps-chronicle is a Vim plugin that record opened files and saved files in the specified path.
+chronicle is a Vim plugin that record opened files and saved files in the specified path.
 
 # Installation 
 
@@ -12,18 +12,18 @@ If you use [folke/lazy.nvim](https://github.com/folke/lazy.nvim).
 
 ```lua
 {
-    "yukimemi/dps-chronicle",
-    lazy = false,
-    dependencies = {
-      "vim-denops/denops.vim",
-    },
-  }
+  "yukimemi/chronicle.vim",
+  lazy = false,
+  dependencies = {
+    "vim-denops/denops.vim",
+  },
+}
 ```
 
 If you use [yukimemi/dvpm](https://github.com/yukimemi/dvpm).
 
 ```typescript
-dvpm.add({ url: "yukimemi/dps-chronicle" });
+dvpm.add({ url: "yukimemi/chronicle.vim" });
 ```
 
 # Requirements 
@@ -37,12 +37,12 @@ By default, record the file to bellow.
 
 - On `BufRead`.
 ```
-  ~/.cache/dps-chronicle/read
+  ~/.cache/chronicle/read
 ```
 
 - On `BufWritePost`.
 ```
-  ~/.cache/dps-chronicle/write
+  ~/.cache/chronicle/write
 ```
 
 # Commands 
@@ -95,11 +95,11 @@ default is v:false
 
 `g:chronicle_read_path`                                
 The path saved on BufRead event.
-default is `~/.cache/dps-chronicle/read`
+default is `~/.cache/chronicle/read`
 
 `g:chronicle_write_path`                              
 The path saved on BufWritePost event.
-default is `~/.cache/dps-chronicle/write`
+default is `~/.cache/chronicle/write`
 
 `g:chronicle_throttle_interval`                
 The throttle interval miliseconds of adding to chronicle list.
@@ -109,13 +109,13 @@ default is 500
 
 ```vim
 let g:chronicle_debug = v:false
-  let g:chronicle_echo = v:false
-  let g:chronicle_notify = v:true
-  let g:chronicle_ignore_filetypes = ["csv", "log"]
-  let g:chronicle_read_path = "~/.cache/chronicle/read"
-  let g:chronicle_write_path = "~/.cache/chronicle/write"
-  nnoremap mr <cmd>OpenChronicleRead<cr>
-  nnoremap mw <cmd>OpenChronicleWrite<cr>
+let g:chronicle_echo = v:false
+let g:chronicle_notify = v:true
+let g:chronicle_ignore_filetypes = ["csv", "log"]
+let g:chronicle_read_path = "~/.cache/chronicle/read"
+let g:chronicle_write_path = "~/.cache/chronicle/write"
+nnoremap mr <cmd>OpenChronicleRead<cr>
+nnoremap mw <cmd>OpenChronicleWrite<cr>
 ```
 
 # Special thanks 
