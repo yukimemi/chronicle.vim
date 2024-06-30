@@ -1,7 +1,7 @@
 // =============================================================================
 // File        : main.ts
 // Author      : yukimemi
-// Last Change : 2024/06/15 22:03:32.
+// Last Change : 2024/06/30 20:45:51.
 // =============================================================================
 
 import * as autocmd from "https://deno.land/x/denops_std@v6.5.0/autocmd/mod.ts";
@@ -218,8 +218,6 @@ export async function main(denops: Denops): Promise<void> {
       endfunction
       command! EnableChronicle call s:${denops.name}_notify('change', [v:true])
       command! DisableChronicle call s:${denops.name}_notify('change', [v:false])
-      command! OpenChronicleWrite call s:${denops.name}_notify('open', ['${writePath}'])
-      command! OpenChronicleRead call s:${denops.name}_notify('open', ['${readPath}'])
       command! ResetChronicleWrite call s:${denops.name}_notify('reset', ['${writePath}'])
       command! ResetChronicleRead call s:${denops.name}_notify('reset', ['${readPath}'])
     `,
