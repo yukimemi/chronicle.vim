@@ -6,10 +6,10 @@
 
 import * as autocmd from "https://deno.land/x/denops_std@v6.5.1/autocmd/mod.ts";
 import * as fn from "https://deno.land/x/denops_std@v6.5.1/function/mod.ts";
-import * as fs from "jsr:@std/fs@0.229.3";
+import * as fs from "jsr:@std/fs@1.0.0";
 import * as helper from "https://deno.land/x/denops_std@v6.5.1/helper/mod.ts";
 import * as op from "https://deno.land/x/denops_std@v6.5.1/option/mod.ts";
-import * as path from "jsr:@std/path@1.0.1";
+import * as path from "jsr:@std/path@1.0.2";
 import * as vars from "https://deno.land/x/denops_std@v6.5.1/variable/mod.ts";
 import { batch } from "https://deno.land/x/denops_std@v6.5.1/batch/mod.ts";
 import dir from "https://deno.land/x/dir@1.5.2/mod.ts";
