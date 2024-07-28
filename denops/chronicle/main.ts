@@ -1,28 +1,28 @@
 // =============================================================================
 // File        : main.ts
 // Author      : yukimemi
-// Last Change : 2024/06/30 20:45:51.
+// Last Change : 2024/07/28 20:39:56.
 // =============================================================================
 
-import * as autocmd from "https://deno.land/x/denops_std@v6.5.1/autocmd/mod.ts";
-import * as fn from "https://deno.land/x/denops_std@v6.5.1/function/mod.ts";
+import * as autocmd from "jsr:@denops/std@7.0.0/autocmd";
+import * as fn from "jsr:@denops/std@7.0.0/function";
 import * as fs from "jsr:@std/fs@1.0.0";
-import * as helper from "https://deno.land/x/denops_std@v6.5.1/helper/mod.ts";
-import * as op from "https://deno.land/x/denops_std@v6.5.1/option/mod.ts";
+import * as helper from "jsr:@denops/std@7.0.0/helper";
+import * as op from "jsr:@denops/std@7.0.0/option";
 import * as path from "jsr:@std/path@1.0.2";
-import * as vars from "https://deno.land/x/denops_std@v6.5.1/variable/mod.ts";
-import { batch } from "https://deno.land/x/denops_std@v6.5.1/batch/mod.ts";
-import dir from "https://deno.land/x/dir@1.5.2/mod.ts";
-import type { Denops } from "https://deno.land/x/denops_std@v6.5.1/mod.ts";
-import { Semaphore } from "https://deno.land/x/async@v2.1.0/mod.ts";
-import { assert, ensure, is } from "https://deno.land/x/unknownutil@v3.18.1/mod.ts";
+import * as vars from "jsr:@denops/std@7.0.0/variable";
+import { batch } from "jsr:@denops/std@7.0.0/batch";
+import { dir } from "jsr:@cross/dir@1.1.0";
+import type { Denops } from "jsr:@denops/std@7.0.0";
+import { Semaphore } from "jsr:@lambdalisue/async@2.1.1";
+import { assert, ensure, is } from "jsr:@core/unknownutil@3.18.1";
 
 let debug = false;
 let enable = true;
 let addEcho = true;
 let addNotify = false;
 let ignoreFileTypes = ["log", "gitcommit"];
-const home = ensure(dir("home"), is.String);
+const home = ensure(await dir("home"), is.String);
 const chronoDir = path.join(home, ".cache", "chronicle");
 let readPath = path.join(chronoDir, "read");
 let writePath = path.join(chronoDir, "write");
