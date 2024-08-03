@@ -4,18 +4,18 @@
 // Last Change : 2024/07/28 20:39:56.
 // =============================================================================
 
-import * as autocmd from "jsr:@denops/std@7.0.0/autocmd";
-import * as fn from "jsr:@denops/std@7.0.0/function";
-import * as fs from "jsr:@std/fs@1.0.0";
-import * as helper from "jsr:@denops/std@7.0.0/helper";
-import * as op from "jsr:@denops/std@7.0.0/option";
+import * as autocmd from "jsr:@denops/std@7.0.3/autocmd";
+import * as fn from "jsr:@denops/std@7.0.3/function";
+import * as fs from "jsr:@std/fs@1.0.1";
+import * as helper from "jsr:@denops/std@7.0.3/helper";
+import * as op from "jsr:@denops/std@7.0.3/option";
 import * as path from "jsr:@std/path@1.0.2";
-import * as vars from "jsr:@denops/std@7.0.0/variable";
-import { batch } from "jsr:@denops/std@7.0.0/batch";
+import * as vars from "jsr:@denops/std@7.0.3/variable";
+import { batch } from "jsr:@denops/std@7.0.3/batch";
 import { dir } from "jsr:@cross/dir@1.1.0";
-import type { Denops } from "jsr:@denops/std@7.0.0";
+import type { Denops } from "jsr:@denops/std@7.0.3";
 import { Semaphore } from "jsr:@lambdalisue/async@2.1.1";
-import { assert, ensure, is } from "jsr:@core/unknownutil@3.18.1";
+import { assert, ensure, is } from "jsr:@core/unknownutil@4.0.0";
 
 let debug = false;
 let enable = true;
