@@ -9,7 +9,7 @@ import * as fn from "jsr:@denops/std@7.1.1/function";
 import * as fs from "jsr:@std/fs@1.0.3";
 import * as helper from "jsr:@denops/std@7.1.1/helper";
 import * as op from "jsr:@denops/std@7.1.1/option";
-import * as path from "jsr:@std/path@1.0.2";
+import * as path from "jsr:@std/path@1.0.6";
 import * as vars from "jsr:@denops/std@7.1.1/variable";
 import { batch } from "jsr:@denops/std@7.1.1/batch";
 import { dir } from "jsr:@cross/dir@1.1.0";
