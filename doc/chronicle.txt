@@ -48,14 +48,12 @@ By default, record the file to bellow.
 
 - On `BufRead`.
 >
-  ~/.cache/chronicle/read
-<
+  `g:chronicle_read_path`
 
 - On `BufWritePost`.
 >
-  ~/.cache/chronicle/write
+  `g:chronicle_write_path`
 <
-
 =============================================================================
 Commands ~
                                                          *chronicle-commands*
@@ -112,11 +110,15 @@ default is v:false
 
 `g:chronicle_read_path`                                *g:chronicle_read_path*
 The path saved on BufRead event.
-default is `~/.cache/chronicle/read`
+Default is `(await dir("cache"))/chronicle/read`
+
+See [@cross/dir - JSR](https://jsr.io/@cross/dir)
 
 `g:chronicle_write_path`                              *g:chronicle_write_path*
 The path saved on BufWritePost event.
-default is `~/.cache/chronicle/write`
+Default is `(await dir("cache"))/chronicle/write`
+
+See [@cross/dir - JSR](https://jsr.io/@cross/dir)
 
 `g:chronicle_throttle_interval`                *g:chronicle_throttle_interval*
 The throttle interval miliseconds of adding to chronicle list.

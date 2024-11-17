@@ -1,7 +1,7 @@
 // =============================================================================
 // File        : main.ts
 // Author      : yukimemi
-// Last Change : 2024/07/28 20:39:56.
+// Last Change : 2024/11/17 20:21:51.
 // =============================================================================
 
 import * as autocmd from "jsr:@denops/std@7.3.2/autocmd";
@@ -10,20 +10,19 @@ import * as fs from "jsr:@std/fs@1.0.5";
 import * as helper from "jsr:@denops/std@7.3.2/helper";
 import * as op from "jsr:@denops/std@7.3.2/option";
 import * as path from "jsr:@std/path@1.0.8";
+import * as v from "jsr:@valibot/valibot@0.42.1";
 import * as vars from "jsr:@denops/std@7.3.2/variable";
-import { batch } from "jsr:@denops/std@7.3.2/batch";
-import { dir } from "jsr:@cross/dir@1.1.0";
 import type { Denops } from "jsr:@denops/std@7.3.2";
 import { Semaphore } from "jsr:@lambdalisue/async@2.1.1";
-import { assert, ensure, is } from "jsr:@core/unknownutil@4.3.0";
+import { batch } from "jsr:@denops/std@7.3.2/batch";
+import { dir } from "jsr:@cross/dir@1.1.0";
 
 let debug = false;
 let enable = true;
 let addEcho = true;
 let addNotify = false;
 let ignoreFileTypes = ["log", "gitcommit"];
-const home = ensure(await dir("home"), is.String);
-const chronoDir = path.join(home, ".cache", "chronicle");
+const chronoDir = path.join(await dir("cache"), "chronicle");
 let readPath = path.join(chronoDir, "read");
 let writePath = path.join(chronoDir, "write");
 let interval = 500;
@@ -87,15 +86,18 @@ export async function main(denops: Denops): Promise<void> {
     "chronicle_ignore_filetypes",
     ignoreFileTypes,
   );
-  readPath = ensure(
+  readPath = v.parse(
+    v.string(),
     await fn.expand(denops, await vars.g.get(denops, "chronicle_read_path", readPath)),
-    is.String,
   );
-  writePath = ensure(
+  await vars.g.set(denops, "chronicle_read_path", readPath);
+  writePath = v.parse(
+    v.string(),
     await fn.expand(denops, await vars.g.get(denops, "chronicle_write_path", writePath)),
-    is.String,
   );
-  interval = ensure(await vars.g.get(denops, "chronicle_throttle_interval", interval), is.Number);
+  await vars.g.set(denops, "chronicle_write_path", writePath);
+  interval = v.parse(v.number(), await vars.g.get(denops, "chronicle_throttle_interval", interval));
+  await vars.g.set(denops, "chronicle_throttle_interval", interval);
 
   clog({
     debug,
@@ -112,7 +114,7 @@ export async function main(denops: Denops): Promise<void> {
     async chronicle(chronoPath: unknown): Promise<void> {
       try {
         await lock.lock(async () => {
-          assert(chronoPath, is.String);
+          const cp = v.parse(v.string(), chronoPath);
           if (!enable) {
             clog(`chronicle skip ! enable: [${enable}]`);
             return;
@@ -125,8 +127,8 @@ export async function main(denops: Denops): Promise<void> {
           }
 
           // Get buffer path.
-          const bufPath = ensure(await fn.expand(denops, "%:p"), is.String);
-          const key = `${chronoPath}:${bufPath}`;
+          const bufPath = v.parse(v.string(), await fn.expand(denops, "%:p"));
+          const key = `${cp}:${bufPath}`;
           const lastExecuted = cache.get(key);
           const now = (new Date()).getTime();
           if (lastExecuted && now - lastExecuted < interval) {
@@ -135,8 +137,8 @@ export async function main(denops: Denops): Promise<void> {
           }
           cache.set(key, (new Date()).getTime());
 
-          clog(`addChronoData: (${chronoPath}, ${bufPath})`);
-          if (!(await addChronoData(chronoPath, bufPath))) {
+          clog(`addChronoData: (${cp}, ${bufPath})`);
+          if (!(await addChronoData(cp, bufPath))) {
             return;
           }
 
@@ -160,11 +162,11 @@ export async function main(denops: Denops): Promise<void> {
 
     async open(chronoPath: unknown): Promise<void> {
       try {
-        assert(chronoPath, is.String);
-        const lines = await getChronoData(chronoPath);
+        const cp = v.parse(v.string(), chronoPath);
+        const lines = await getChronoData(cp);
         await batch(denops, async () => {
           await fn.setqflist(denops, [], " ", {
-            title: `[chronicle] ${chronoPath}`,
+            title: `[chronicle] ${cp}`,
             efm: "%f",
             lines,
           });
@@ -176,16 +178,15 @@ export async function main(denops: Denops): Promise<void> {
     },
 
     // deno-lint-ignore require-await
-    async change(e: unknown): Promise<void> {
-      assert(e, is.Boolean);
+    async change(enabled: unknown): Promise<void> {
+      const e = v.parse(v.boolean(), enabled);
       console.log(`Chronicle change: ${e}`);
       enable = e;
     },
 
     async reset(chronoPath: unknown): Promise<void> {
-      assert(chronoPath, is.String);
-
-      const msg = `Remove: ${chronoPath}`;
+      const cp = v.parse(v.string(), chronoPath);
+      const msg = `Remove: ${cp}`;
 
       if (addEcho) {
         console.log(msg);
@@ -199,7 +200,7 @@ export async function main(denops: Denops): Promise<void> {
         );
       }
 
-      await Deno.remove(chronoPath);
+      await Deno.remove(cp);
     },
 
     async listRead(): Promise<string[]> {
