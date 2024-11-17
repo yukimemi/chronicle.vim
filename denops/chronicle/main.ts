@@ -1,7 +1,7 @@
 // =============================================================================
 // File        : main.ts
 // Author      : yukimemi
-// Last Change : 2024/11/17 20:21:51.
+// Last Change : 2024/11/17 21:03:32.
 // =============================================================================
 
 import * as autocmd from "jsr:@denops/std@7.3.2/autocmd";
@@ -30,7 +30,7 @@ let interval = 500;
 const lock = new Semaphore(1);
 const cache = new Map<string, number>();
 
-async function getChronoData(chronoPath: string, reverse = true): Promise<string[]> {
+async function getChronoData(chronoPath: string, reverse = false): Promise<string[]> {
   const lines = (await Deno.readTextFile(chronoPath)).split(/\r?\n/).filter((x) => x !== "");
   if (reverse) {
     return lines.reverse();
@@ -40,7 +40,7 @@ async function getChronoData(chronoPath: string, reverse = true): Promise<string
 
 async function setChronoData(chronoPath: string, lines: string[]) {
   await fs.ensureDir(path.dirname(chronoPath));
-  await Deno.writeTextFile(chronoPath, lines.join("\n"));
+  await Deno.writeTextFile(chronoPath, lines.reverse().join("\n"));
 }
 
 function normalizedAddPath(addPath: string): string {
@@ -54,7 +54,7 @@ async function addChronoData(chronoPath: string, addPath: string): Promise<boole
     }
     const nap = normalizedAddPath(addPath);
     if (await fs.exists(chronoPath)) {
-      const lines = (await getChronoData(chronoPath, false)).filter((x) => x !== nap);
+      const lines = (await getChronoData(chronoPath, true)).filter((x) => x !== nap);
       lines.push(nap);
       await setChronoData(chronoPath, lines);
       return true;

@@ -36,9 +36,11 @@ No special settings are required.
 By default, record the file to bellow.
 
 - On `BufRead`.
+
   `g:chronicle_read_path`
 
 - On `BufWritePost`.
+
   `g:chronicle_write_path`
 
 # Commands
