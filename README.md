@@ -30,6 +30,7 @@ dvpm.add({ url: "yukimemi/chronicle.vim" });
 
 - [Deno - A modern runtime for JavaScript and TypeScript](https://deno.land/)
 - [vim-denops/denops.vim: 🐜 An ecosystem of Vim/Neovim which allows developers to write cross-platform plugins in Deno](https://github.com/vim-denops/denops.vim)
+
 # Usage
 
 No special settings are required.
@@ -134,6 +135,16 @@ let g:chronicle_write_path = "~/.cache/chronicle/write"
 nnoremap mr <cmd>OpenChronicleRead<cr>
 nnoremap mw <cmd>OpenChronicleWrite<cr>
 ```
+
+# Integration
+
+## [Shougo/ddu.vim](https://github.com/Shougo/ddu.vim)
+
+- [yukimemi/ddu-source-chronicle: ddu.vim source of dps-chronicle](https://github.com/yukimemi/ddu-source-chronicle)
+
+## [vim-fall/fall.vim](https://github.com/vim-fall/fall.vim) 
+
+- [yukimemi/fall-source-chronicle: fall.vim source for chronicle.vim](https://github.com/yukimemi/fall-source-chronicle)
 
 # Special thanks
 
