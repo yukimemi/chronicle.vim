@@ -155,5 +155,5 @@ Thank you!
 
 Licensed under MIT License.
 
-Copyright (c) 2023 yukimemi
+Copyright (c) 2024 yukimemi
 
