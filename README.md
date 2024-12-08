@@ -134,6 +134,10 @@ nnoremap mw <cmd>OpenChronicleWrite<cr>
 
 # Integration
 
+## [nvim-telescope/telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)
+
+- [yukimemi/telescope-chronicle.nvim](https://github.com/yukimemi/telescope-chronicle.nvim)
+
 ## [Shougo/ddu.vim](https://github.com/Shougo/ddu.vim)
 
 - [yukimemi/ddu-source-chronicle: ddu.vim source of dps-chronicle](https://github.com/yukimemi/ddu-source-chronicle)
