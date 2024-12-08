@@ -1,7 +1,7 @@
 // =============================================================================
 // File        : main.ts
 // Author      : yukimemi
-// Last Change : 2024/11/17 21:03:32.
+// Last Change : 2024/12/08 16:30:46.
 // =============================================================================
 
 import * as autocmd from "jsr:@denops/std@7.4.0/autocmd";
@@ -15,16 +15,12 @@ import * as vars from "jsr:@denops/std@7.4.0/variable";
 import type { Denops } from "jsr:@denops/std@7.4.0";
 import { Semaphore } from "jsr:@lambdalisue/async@2.1.1";
 import { batch } from "jsr:@denops/std@7.4.0/batch";
-import { dir } from "jsr:@cross/dir@1.1.0";
 
 let debug = false;
 let enable = true;
 let addEcho = true;
 let addNotify = false;
 let ignoreFileTypes = ["log", "gitcommit"];
-const chronoDir = path.join(await dir("cache"), "chronicle");
-let readPath = path.join(chronoDir, "read");
-let writePath = path.join(chronoDir, "write");
 let interval = 500;
 
 const lock = new Semaphore(1);
@@ -86,14 +82,14 @@ export async function main(denops: Denops): Promise<void> {
     "chronicle_ignore_filetypes",
     ignoreFileTypes,
   );
-  readPath = v.parse(
+  const readPath = v.parse(
     v.string(),
-    await fn.expand(denops, await vars.g.get(denops, "chronicle_read_path", readPath)),
+    await fn.expand(denops, await vars.g.get(denops, "chronicle_read_path")),
   );
   await vars.g.set(denops, "chronicle_read_path", readPath);
-  writePath = v.parse(
+  const writePath = v.parse(
     v.string(),
-    await fn.expand(denops, await vars.g.get(denops, "chronicle_write_path", writePath)),
+    await fn.expand(denops, await vars.g.get(denops, "chronicle_write_path")),
   );
   await vars.g.set(denops, "chronicle_write_path", writePath);
   interval = v.parse(v.number(), await vars.g.get(denops, "chronicle_throttle_interval", interval));

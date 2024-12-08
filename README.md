@@ -107,16 +107,12 @@ default is v:false
 `g:chronicle_read_path`
 
 The path saved on BufRead event.
-Default is `(await dir("cache"))/chronicle/read`
-
-See [@cross/dir - JSR](https://jsr.io/@cross/dir)
+Default is `~/.chronicle/read`
 
 `g:chronicle_write_path`
 
 The path saved on BufWritePost event.
-Default is `(await dir("cache"))/chronicle/write`
-
-See [@cross/dir - JSR](https://jsr.io/@cross/dir)
+Default is `~/.chronicle/write`
 
 `g:chronicle_throttle_interval`
 
