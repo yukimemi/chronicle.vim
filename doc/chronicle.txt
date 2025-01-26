@@ -145,12 +145,15 @@ Integration ~
 
 [Shougo/ddu.vim](https://github.com/Shougo/ddu.vim)
 
-- [yukimemi/ddu-source-chronicle: ddu.vim source of dps-chronicle](https://github.com/yukimemi/ddu-source-chronicle)
+- [yukimemi/ddu-source-chronicle](https://github.com/yukimemi/ddu-source-chronicle)
 
 [vim-fall/fall.vim](https://github.com/vim-fall/fall.vim)
 
-- [yukimemi/fall-source-chronicle: fall.vim source for chronicle.vim](https://github.com/yukimemi/fall-source-chronicle)
+- [yukimemi/fall-source-chronicle](https://github.com/yukimemi/fall-source-chronicle)
 
+[hrsh7th/nvim-deck](https://github.com/hrsh7th/nvim-deck)
+
+- [yukimemi/deck-source-chronicle](https://github.com/yukimemi/deck-source-chronicle)
 
 =============================================================================
 Special thanks ~
