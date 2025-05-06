@@ -10,7 +10,7 @@ import * as fs from "jsr:@std/fs@1.0.17";
 import * as helper from "jsr:@denops/std@7.5.0/helper";
 import * as op from "jsr:@denops/std@7.5.0/option";
 import * as path from "jsr:@std/path@1.0.9";
-import * as v from "jsr:@valibot/valibot@1.0.0";
+import * as v from "jsr:@valibot/valibot@1.1.0";
 import * as vars from "jsr:@denops/std@7.5.0/variable";
 import type { Denops } from "jsr:@denops/std@7.5.0";
 import { Semaphore } from "jsr:@lambdalisue/async@2.1.1";
