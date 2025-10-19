@@ -4,17 +4,17 @@
 // Last Change : 2024/12/08 16:30:46.
 // =============================================================================
 
-import * as autocmd from "jsr:@denops/std@8.1.0/autocmd";
-import * as fn from "jsr:@denops/std@8.1.0/function";
+import * as autocmd from "jsr:@denops/std@8.1.1/autocmd";
+import * as fn from "jsr:@denops/std@8.1.1/function";
 import * as fs from "jsr:@std/fs@1.0.19";
-import * as helper from "jsr:@denops/std@8.1.0/helper";
-import * as op from "jsr:@denops/std@8.1.0/option";
+import * as helper from "jsr:@denops/std@8.1.1/helper";
+import * as op from "jsr:@denops/std@8.1.1/option";
 import * as path from "jsr:@std/path@1.1.2";
 import * as v from "jsr:@valibot/valibot@1.1.0";
-import * as vars from "jsr:@denops/std@8.1.0/variable";
-import type { Denops } from "jsr:@denops/std@8.1.0";
+import * as vars from "jsr:@denops/std@8.1.1/variable";
+import type { Denops } from "jsr:@denops/std@8.1.1";
 import { Semaphore } from "jsr:@lambdalisue/async@2.1.1";
-import { batch } from "jsr:@denops/std@8.1.0/batch";
+import { batch } from "jsr:@denops/std@8.1.1/batch";
 
 let debug = false;
 let enable = true;
