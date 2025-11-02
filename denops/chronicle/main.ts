@@ -1,20 +1,20 @@
 // =============================================================================
 // File        : main.ts
 // Author      : yukimemi
-// Last Change : 2024/12/08 16:30:46.
+// Last Change : 2025/11/02 10:20:39.
 // =============================================================================
 
-import * as autocmd from "jsr:@denops/std@8.1.1/autocmd";
-import * as fn from "jsr:@denops/std@8.1.1/function";
-import * as fs from "jsr:@std/fs@1.0.19";
-import * as helper from "jsr:@denops/std@8.1.1/helper";
-import * as op from "jsr:@denops/std@8.1.1/option";
-import * as path from "jsr:@std/path@1.1.2";
-import * as v from "jsr:@valibot/valibot@1.1.0";
-import * as vars from "jsr:@denops/std@8.1.1/variable";
-import type { Denops } from "jsr:@denops/std@8.1.1";
-import { Semaphore } from "jsr:@lambdalisue/async@2.1.1";
-import { batch } from "jsr:@denops/std@8.1.1/batch";
+import * as autocmd from "@denops/std/autocmd";
+import * as fn from "@denops/std/function";
+import * as fs from "@std/fs";
+import * as helper from "@denops/std/helper";
+import * as op from "@denops/std/option";
+import * as path from "@std/path";
+import * as v from "@valibot/valibot";
+import * as vars from "@denops/std/variable";
+import type { Denops } from "@denops/std";
+import { Semaphore } from "@lambdalisue/async";
+import { batch } from "@denops/std/batch";
 
 let debug = false;
 let enable = true;
