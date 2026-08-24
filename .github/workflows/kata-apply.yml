@@ -1,0 +1,150 @@
+name: kata-apply
+
+# Auto-sync rendered kata-managed files on a daily cadence.
+#
+# Renovate's customManager bumps action-version pins in
+# `.kata/vars.toml`, and pj-* templates upstream also evolve
+# (action versions, workflow structure, etc.). Either change
+# can leave the rendered output (e.g. `.github/workflows/ci.yml`,
+# produced by Tera-rendering `ci.yml.tera`) stale until someone
+# runs `kata apply` manually.
+#
+# Daily schedule sweep covers both:
+# - bumps that landed on this repo since the last sweep
+#   (`.kata/vars.toml` changes Renovate has merged),
+# - upstream template changes pulled via `kata update` (refreshes
+#   `applied.toml`'s recorded revs against the latest upstream).
+#
+# Output: a PR (single rolling branch `kata-apply/auto`) with the
+# rendered-file diff. Auto-merged when CI passes — if CI fails,
+# the PR stays open for human review. Auto-merge can also fail to
+# arm at all (see the last step), whether because the repo has no
+# required checks or because none had registered yet; the PR then
+# stays open, which is the safe default.
+#
+# Source: yukimemi/pj-base. Filename carries `.tera` so kata
+# Tera-renders the file at apply time (substituting
+# `{{ vars.actions.* }}`) and strips the
+# suffix — consumer receives `.github/workflows/kata-apply.yml`.
+# pj-base itself has no `.kata` state, so the .tera source never
+# executes in GHA in this repo (GHA only invokes `.yml`/`.yaml`).
+
+on:
+  schedule:
+    # 03:17 UTC daily — off-peak, slightly off-the-hour to dodge
+    # the cron-storm at :00.
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  # `peter-evans/create-pull-request` needs both: contents to
+  # write the branch, pull-requests to open/update the PR.
+  contents: write
+  pull-requests: write
+
+concurrency:
+  # Serialise: if a scheduled run and a manual dispatch overlap,
+  # let them run sequentially so the second sees the first's commit.
+  group: kata-apply
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout with the PAT (KATA_APPLY_TOKEN), NOT GITHUB_TOKEN.
+      # Reason: PRs pushed via GITHUB_TOKEN don't trigger downstream
+      # workflows (GitHub's loop-prevention rule), which would block
+      # CI from running on the auto-PR — making auto-merge wait for
+      # checks that never fire. A PAT acts as a user-identity push
+      # and triggers CI normally.
+      - uses: actions/checkout@v7.0.1
+        with:
+          token: ${{ secrets.KATA_APPLY_TOKEN }}
+          # Don't leave KATA_APPLY_TOKEN in the local git credential helper for the "Install kata" step (downloads and runs the untrusted `kata` binary from GitHub's `latest` release) to read: kata update/apply never push, and the later create-pull-request / gh pr merge steps each bring their own explicit token.
+          persist-credentials: false
+
+      - name: Install kata
+        run: |
+          set -euo pipefail
+          KATA_VERSION="$(curl -fsSL https://api.github.com/repos/yukimemi/kata/releases/latest | jq -r .tag_name)"
+          echo "Installing kata ${KATA_VERSION}"
+          curl -fsSL "https://github.com/yukimemi/kata/releases/download/${KATA_VERSION}/kata-x86_64-unknown-linux-musl.tar.gz" \
+            | tar xz -C /tmp
+          sudo mv /tmp/kata /usr/local/bin/kata
+          kata --version
+
+      # `kata update` refreshes cached template revs against
+      # upstream HEAD (so a new pj-rust release flows in on the
+      # next apply). `kata apply` re-renders / re-merges every
+      # manifest-listed file against the now-fresh templates.
+      - name: kata update + apply
+        run: |
+          kata update
+          kata apply --non-interactive --no-ai
+
+      - name: Open / update PR if there are changes
+        id: cpr
+        uses: peter-evans/create-pull-request@v8.1.1
+        with:
+          token: ${{ secrets.KATA_APPLY_TOKEN }}
+          branch: kata-apply/auto
+          delete-branch: true
+          title: "chore(kata): auto-apply"
+          commit-message: "chore(kata): refresh rendered files"
+          body: |
+            Automated `kata update + apply` (daily schedule + manual dispatch).
+
+            Auto-merged when CI passes; left open if CI fails — or if
+            auto-merge couldn't be armed (no required checks, or none
+            had registered yet when this PR was opened).
+
+            <!-- pj-base ships this workflow; see yukimemi/pj-base#6 -->
+          author: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
+          committer: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
+
+      # Arm auto-merge so the PR lands by itself once the consumer's
+      # required checks go green.
+      #
+      # Deliberately tolerant of failure. GitHub rejects the
+      # `enablePullRequestAutoMerge` mutation when the PR is ALREADY
+      # mergeable — nothing left to wait on — and `gh pr merge
+      # --auto` exits 1 with
+      #   GraphQL: Pull request Pull request is in clean status
+      #   (enablePullRequestAutoMerge)
+      # Two situations produce that state: a default branch with no
+      # required status checks, permanently; or, transiently, this
+      # step firing a second or two after `create-pull-request`
+      # opens the PR, before the first check has registered. The
+      # second is a race, so the same repo can fail one run and
+      # succeed the next — yukimemi/hakari did exactly that within
+      # the hour (run 32610568604 failed, run 32612382813 armed
+      # fine) with its branch protection unchanged (absent)
+      # throughout. Either way, a red scheduled job that means
+      # nothing trains people to ignore the one that does.
+      #
+      # No fallback to an unconditional `gh pr merge --squash`: a repo
+      # with no required checks has no automated confidence to merge
+      # on. The very hakari PR that surfaced this carried three silent
+      # reverts of consumer-owned config; a human caught them. Leaving
+      # the PR open IS the correct outcome here, not a degraded one.
+      #
+      # Nor is the cause worth discriminating: gh reports every
+      # failure as a bare exit 1 with no machine-readable cause, so
+      # telling the two apart would mean matching on the error text
+      # — brittle against gh/API wording drift — and against a race
+      # the verdict would be about timing, not configuration. The
+      # step tolerates any arming failure and annotates it instead;
+      # gh's own stderr stays in the log, and the PR is visible on
+      # the repo either way.
+      - name: Enable auto-merge
+        if: steps.cpr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ secrets.KATA_APPLY_TOKEN }}
+          PR: ${{ steps.cpr.outputs.pull-request-number }}
+        run: |
+          if gh pr merge --auto --squash "$PR"; then
+            echo "Auto-merge armed for PR #${PR}; it will land once required checks pass."
+            exit 0
+          fi
+          echo "::notice::Auto-merge could not be armed for PR #${PR} (see the gh error above; GitHub refuses to arm auto-merge on an already-mergeable PR — either the repo has no required status checks, or none had registered yet in the seconds since the PR was opened). Leaving the PR open for human review."
