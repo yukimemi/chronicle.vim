@@ -1,0 +1,173 @@
+name: apm-bump
+
+# Auto-refresh apm.lock.yaml on a weekly cadence.
+#
+# Why this exists:
+# - Before pj-base#?? / pj-rust#??, the renri `[[hooks.post_create]]`
+#   hook ran `apm install --update` on every `renri add`. That
+#   rewrites apm.lock.yaml whenever upstream renri (or any other
+#   apm dep) has moved — which, during active renri development,
+#   happens often. Developers ended up `jj restore`-ing the lock
+#   on every worktree create just to keep feature-branch diffs
+#   clean.
+# - Solution split into two parts:
+#   (a) the renri hook now runs plain `apm install` (no --update),
+#       which is idempotent against the existing lock — fresh
+#       worktrees install the recorded skills without touching the
+#       lock. Lives in pj-base's `renri.toml.base` (this layer)
+#       and pj-rust's `Makefile.toml` (`tasks.on-add` chain).
+#   (b) **this workflow** does the upstream-refresh. Weekly cron
+#       runs `apm install --update`; if the lock changes, it opens
+#       (or updates) a rolling `apm-bump/auto` PR. Auto-merged
+#       when CI passes. Same shape as `kata-apply.yml.tera`'s
+#       Renovate-equivalent for kata-managed files.
+#
+# Schedule: Mondays 04:00 UTC (~13:00 JST). Weekly is plenty for
+# skill drift; tighten via `workflow_dispatch` when needed.
+#
+# `.tera` suffix: same dual purpose as the other workflow
+# templates here — keeps GHA from auto-running the source inside
+# pj-base, and opts the file into kata's Tera rendering for the
+# `{{ vars.actions.* }}` action-version pins.
+#
+# Setup requirement on every consumer (one-time):
+#   `KATA_APPLY_TOKEN` repo secret — classic PAT with `repo` +
+#   `workflow` scope. PAT-owned PRs trigger downstream workflows
+#   (the auto-merge gate needs CI to fire); GITHUB_TOKEN-opened
+#   PRs would skip CI by GitHub design.
+#
+# `when = "always"` (in template.toml): every consumer wants
+# identical refresh behaviour; fixes to the workflow itself flow
+# automatically on next apply.
+
+on:
+  schedule:
+    # 04:00 UTC weekly Mondays. Off-peak; minute 0 is fine for a
+    # once-a-week job (no cron-storm worry the way daily jobs have).
+    - cron: "0 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  # `peter-evans/create-pull-request` needs both: contents to
+  # write the branch, pull-requests to open/update the PR.
+  contents: write
+  pull-requests: write
+
+concurrency:
+  # Serialise: if a scheduled run and a manual dispatch overlap,
+  # let them run sequentially so the second sees the first's
+  # commit (same shape as kata-apply.yml.tera).
+  group: apm-bump
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      # PAT (KATA_APPLY_TOKEN), same reason kata-apply.yml.tera
+      # uses it: PRs pushed via GITHUB_TOKEN don't trigger CI,
+      # which would block the auto-merge gate. PAT-owned identity
+      # restores the trigger chain.
+      - uses: actions/checkout@v7.0.1
+        with:
+          token: ${{ secrets.KATA_APPLY_TOKEN }}
+          persist-credentials: false
+
+      - name: Install apm
+        # aka.ms/apm-unix is the Unix one-liner installer published
+        # by Microsoft/apm. Same source the local-dev docs use
+        # ("install via aka.ms/apm-unix or your platform's package
+        # manager").
+        #
+        # GITHUB_TOKEN: the installer resolves apm's latest release
+        # via api.github.com, and an unauthenticated call shares the
+        # hosted runner IP's 60-req/hr quota with every other tenant
+        # — shoka's weekly run died on "API rate limit exceeded"
+        # (2026-06-01). The script honours GITHUB_APM_PAT >
+        # GITHUB_TOKEN > GH_TOKEN, so hand it the workflow's default
+        # token; no extra scopes needed for a public-repo release
+        # lookup.
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          curl -fsSL https://aka.ms/apm-unix | sh
+          echo "$HOME/.apm/bin" >> "$GITHUB_PATH"
+
+      - name: Refresh apm.lock.yaml
+        # No-op when apm.yml is absent — some PJs may not ship one
+        # yet, and the workflow shouldn't fail because of that.
+        # The actual `apm install --update` then resolves every
+        # `dependencies.apm:` entry to upstream HEAD and rewrites
+        # the lock. Targets match the local Makefile.toml task
+        # (copilot/claude/gemini) so worktrees and CI agree on
+        # which agent skill dirs get populated.
+        run: |
+          set -euo pipefail
+          if [ ! -f apm.yml ]; then
+            echo "no apm.yml; nothing to refresh"
+            exit 0
+          fi
+          apm install --update -t copilot,claude,gemini
+
+      - name: Open / update PR if there are changes
+        id: cpr
+        uses: peter-evans/create-pull-request@v8.1.1
+        with:
+          token: ${{ secrets.KATA_APPLY_TOKEN }}
+          branch: apm-bump/auto
+          delete-branch: true
+          title: "chore(apm): refresh apm.lock.yaml"
+          commit-message: "chore(apm): refresh apm.lock.yaml"
+          body: |
+            Automated `apm install --update` (weekly schedule + manual dispatch).
+
+            Auto-merged when CI passes; left open if CI fails — or if
+            auto-merge couldn't be armed (no required checks, or none
+            had registered yet when this PR was opened).
+
+            <!-- pj-base ships this workflow; see yukimemi/pj-base -->
+          author: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
+          committer: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
+
+      # Arm auto-merge so the PR lands by itself once the consumer's
+      # required checks go green.
+      #
+      # Deliberately tolerant of failure, same reasoning as
+      # kata-apply.yml.tera's identical step: GitHub rejects the
+      # `enablePullRequestAutoMerge` mutation when the PR is ALREADY
+      # mergeable — nothing left to wait on — and `gh pr merge
+      # --auto` exits 1 with
+      #   GraphQL: Pull request Pull request is in clean status
+      #   (enablePullRequestAutoMerge)
+      # Two situations produce that state here: a consumer repo with
+      # no required status checks, permanently; or, transiently,
+      # this step firing before the first check has registered on
+      # the just-opened `apm-bump/auto` PR — a race, so the same
+      # repo can fail one weekly run and succeed the next with its
+      # branch protection unchanged.
+      #
+      # No fallback to an unconditional `gh pr merge --squash`: a
+      # repo with no required checks has no automated confidence to
+      # merge an apm.lock.yaml bump on, and leaving the PR open for
+      # human review is the correct outcome here, not a degraded one.
+      #
+      # Nor is the cause worth discriminating: gh reports every
+      # failure as a bare exit 1 with no machine-readable cause, so
+      # telling the two apart would mean matching on error text —
+      # brittle against gh/API wording drift — against a race whose
+      # verdict is about timing, not configuration. The step
+      # tolerates any arming failure and annotates it instead; gh's
+      # own stderr stays in the log, and the PR is visible on the
+      # repo either way.
+      - name: Enable auto-merge
+        if: steps.cpr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ secrets.KATA_APPLY_TOKEN }}
+          PR: ${{ steps.cpr.outputs.pull-request-number }}
+        run: |
+          if gh pr merge --auto --squash "$PR"; then
+            echo "Auto-merge armed for PR #${PR}; it will land once required checks pass."
+            exit 0
+          fi
+          echo "::notice::Auto-merge could not be armed for PR #${PR} (see the gh error above; GitHub refuses to arm auto-merge on an already-mergeable PR — either the repo has no required status checks, or none had registered yet in the seconds since the PR was opened). Leaving the PR open for human review."
