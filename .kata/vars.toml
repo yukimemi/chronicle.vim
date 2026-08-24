@@ -33,9 +33,9 @@ claude_code_action = "v1.0.195"
 # renovate: datasource=github-tags depName=denoland/setup-deno
 deno_setup = "v2"
 # renovate: datasource=github-tags depName=rhysd/action-setup-vim
-rhysd_action_setup_vim = "v1"
+rhysd_action_setup_vim = "v1.6.1"
 # renovate: datasource=github-tags depName=thinca/action-setup-vim
-thinca_action_setup_vim = "v3"
+thinca_action_setup_vim = "v3.0.2"
 
 [denops]
 # Editor versions the CI matrix installs. `@denops/test` spawns REAL
