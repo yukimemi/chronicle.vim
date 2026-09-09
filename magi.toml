@@ -31,21 +31,26 @@
 # whatever `vim` / `nvim` resolve to on PATH, and let an operator whose PATH
 # doesn't have them override via the same env vars `@denops/test` reads.
 #
-# Literal (single-quoted) TOML strings on purpose: teravars substitutes into
-# the raw file text before TOML ever parses it, so a Windows install path
-# (`C:\Program Files\Vim\vim.exe`) landing inside a double-quoted TOML string
-# would hit TOML's own backslash-escaping and fail to parse (`\P` is not a
-# valid escape). A literal string takes the substituted text as-is.
-vim = '{{ env.DENOPS_TEST_VIM_EXECUTABLE | default(value="vim") }}'
-nvim = '{{ env.DENOPS_TEST_NVIM_EXECUTABLE | default(value="nvim") }}'
+# Multi-line literal (triple-single-quoted) TOML strings on purpose: teravars
+# substitutes into the raw file text before TOML ever parses it, so a Windows
+# install path lands here uninterpreted. A double-quoted TOML string would
+# choke on the path's backslashes (`\P` is not a valid TOML escape); a
+# single-line literal string ('...') would in turn choke on a single quote
+# inside the path (e.g. `C:\Users\O'Connor\...`) by terminating early. Only
+# the triple-quoted form tolerates both backslashes and a stray apostrophe.
+vim = '''{{ env.DENOPS_TEST_VIM_EXECUTABLE | default(value="vim") }}'''
+nvim = '''{{ env.DENOPS_TEST_NVIM_EXECUTABLE | default(value="nvim") }}'''
 
 [verify]
 # The real-machine leg, run in the winner's worktree once per review round.
 # Just the test suite — `deno.json`'s `test` task, `deno test -A`. The
-# executable paths are shell-quoted (not just TOML-literal-quoted): `sh -c`
-# still splits an unquoted `VAR=C:\Program Files\...` on the space.
+# executable paths are shell-double-quoted (not just TOML-literal-quoted):
+# `sh -c` still splits an unquoted `VAR=C:\Program Files\...` on the space.
+# Double quotes are safe here even though the TOML wrapper is single-quoted:
+# Windows paths cannot contain `"`, so the shell-quoting layer never collides
+# with an apostrophe that the TOML-quoting layer above already tolerates.
 e2e = [
-  'DENOPS_TEST_VIM_EXECUTABLE="{{ vars.vim }}" DENOPS_TEST_NVIM_EXECUTABLE="{{ vars.nvim }}" deno task test',
+  '''DENOPS_TEST_VIM_EXECUTABLE="{{ vars.vim }}" DENOPS_TEST_NVIM_EXECUTABLE="{{ vars.nvim }}" deno task test''',
 ]
 # Same gate as CI. `.github/workflows/ci.yml` runs one step, `deno task ci`,
 # with these two env vars set; `deno.json`'s `ci` task is
@@ -55,14 +60,24 @@ e2e = [
 # operator machine can't reproduce locally — that gap is inherent to running
 # the gate on one machine and isn't something this file can close.
 gate = [
-  'DENOPS_TEST_VIM_EXECUTABLE="{{ vars.vim }}" DENOPS_TEST_NVIM_EXECUTABLE="{{ vars.nvim }}" deno task ci',
+  '''DENOPS_TEST_VIM_EXECUTABLE="{{ vars.vim }}" DENOPS_TEST_NVIM_EXECUTABLE="{{ vars.nvim }}" deno task ci''',
 ]
 
 [merge]
-mode = "none"
-# Required here, and in every jj-colocated repo: jj keeps git's HEAD detached
-# at the working-copy commit, so magi cannot infer the base branch from
-# `git symbolic-ref HEAD`. This repository's default branch is `main`.
+# `mode` is deliberately *not* set here: the machine layer already carries
+# `mode = "pr"`, chosen fleet-wide after a run landed clean and then sat
+# unmerged because `"none"` only prints the merge command and nothing runs
+# it. `mode` isn't a fact about this repository, so restating it would
+# silently reintroduce that failure mode for chronicle.vim alone — verified
+# with `magi doctor`, which resolves `merge` to `Pr` as long as this table
+# only sets `base` (table keys merge per-field across layers, so an unset key
+# here falls through to the machine layer instead of resetting to magi's
+# built-in default).
+#
+# `base` still has to be here, and in every jj-colocated repo: jj keeps git's
+# HEAD detached at the working-copy commit, so magi cannot infer the base
+# branch from `git symbolic-ref HEAD`. This repository's default branch is
+# `main`.
 base = "main"
 
 # Project conventions appended to the node prompts, never merged into them.
