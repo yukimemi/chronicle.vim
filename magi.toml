@@ -1,0 +1,95 @@
+# magi competing on chronicle.vim.
+#
+# **Only what is peculiar to this checkout lives here.** The roster, the seat
+# assignment, the shape of a run and the update policy are all machine facts,
+# not repository facts — they moved to the machine layer
+# (`<config_dir>/magi/config.toml`) and are not restated here. What that
+# leaves, and why each one still has to be here:
+#
+# - `[verify]` runs `deno`, against a Deno/denops repo. The machine layer
+#   cannot know that.
+# - `[merge] base` names this repository's default branch, and is required at
+#   all because of how every checkout on this machine is set up (see below).
+# - `[prompts]` restates the jj-colocated etiquette the machine layer already
+#   states under the same key, plus this repository's own conventions. A
+#   scalar key is replaced whole by the highest layer that sets it, not
+#   merged, so leaving the jj text out here would silently drop it for this
+#   repo.
+#
+# Note that an array may be declared in exactly one layer
+# (`Config::refuse_split_arrays`), so `[verify]`'s arrays being here is also
+# why the roster's arrays are *only* in the machine layer.
+#
+# Rendered by teravars. Tera braces are live everywhere in this file, but
+# comments are stripped before Tera sees them (teravars >= 0.2.2), so a
+# comment may quote `{{ ... }}` freely.
+
+[vars]
+# `@denops/test` spawns real Vim / Neovim binaries; CI installs pinned ones and
+# exports these two env vars (see `.github/workflows/ci.yml` and
+# `.kata/vars.toml`). Locally there is no pinned install, so default to
+# whatever `vim` / `nvim` resolve to on PATH, and let an operator whose PATH
+# doesn't have them override via the same env vars `@denops/test` reads.
+#
+# Multi-line literal (triple-single-quoted) TOML strings on purpose: teravars
+# substitutes into the raw file text before TOML ever parses it, so a Windows
+# install path lands here uninterpreted. A double-quoted TOML string would
+# choke on the path's backslashes (`\P` is not a valid TOML escape); a
+# single-line literal string ('...') would in turn choke on a single quote
+# inside the path (e.g. `C:\Users\O'Connor\...`) by terminating early. Only
+# the triple-quoted form tolerates both backslashes and a stray apostrophe.
+vim = '''{{ env.DENOPS_TEST_VIM_EXECUTABLE | default(value="vim") }}'''
+nvim = '''{{ env.DENOPS_TEST_NVIM_EXECUTABLE | default(value="nvim") }}'''
+
+[verify]
+# The real-machine leg, run in the winner's worktree once per review round.
+# Just the test suite — `deno.json`'s `test` task, `deno test -A`. The
+# executable paths are shell-double-quoted (not just TOML-literal-quoted):
+# `sh -c` still splits an unquoted `VAR=C:\Program Files\...` on the space.
+# Double quotes are safe here even though the TOML wrapper is single-quoted:
+# Windows paths cannot contain `"`, so the shell-quoting layer never collides
+# with an apostrophe that the TOML-quoting layer above already tolerates.
+e2e = [
+  '''DENOPS_TEST_VIM_EXECUTABLE="{{ vars.vim }}" DENOPS_TEST_NVIM_EXECUTABLE="{{ vars.nvim }}" deno task test''',
+]
+# Same gate as CI. `.github/workflows/ci.yml` runs one step, `deno task ci`,
+# with these two env vars set; `deno.json`'s `ci` task is
+# `deno task check && deno task lint && deno task fmt --check && deno task test`,
+# so this is the whole thing, not a subset. The only part CI does that this
+# can't: the matrix also runs on macOS and Linux runners, which a Windows
+# operator machine can't reproduce locally — that gap is inherent to running
+# the gate on one machine and isn't something this file can close.
+gate = [
+  '''DENOPS_TEST_VIM_EXECUTABLE="{{ vars.vim }}" DENOPS_TEST_NVIM_EXECUTABLE="{{ vars.nvim }}" deno task ci''',
+]
+
+[merge]
+# `mode` is deliberately *not* set here: the machine layer already carries
+# `mode = "pr"`, chosen fleet-wide after a run landed clean and then sat
+# unmerged because `"none"` only prints the merge command and nothing runs
+# it. `mode` isn't a fact about this repository, so restating it would
+# silently reintroduce that failure mode for chronicle.vim alone — verified
+# with `magi doctor`, which resolves `merge` to `Pr` as long as this table
+# only sets `base` (table keys merge per-field across layers, so an unset key
+# here falls through to the machine layer instead of resetting to magi's
+# built-in default).
+#
+# `base` still has to be here, and in every jj-colocated repo: jj keeps git's
+# HEAD detached at the working-copy commit, so magi cannot infer the base
+# branch from `git symbolic-ref HEAD`. This repository's default branch is
+# `main`.
+base = "main"
+
+# Project conventions appended to the node prompts, never merged into them.
+# Repository-wide context lives in AGENTS.md, which every agent already reads
+# from the checkout; these are the things a magi *node* needs to know.
+[prompts]
+all = """
+This repository uses jj (Jujutsu) with a colocated git repo. `git commit` works \
+in a candidate worktree and is what magi expects, but never run `jj` commands \
+and never touch the main working copy.
+This is a denops (Vim/Neovim) plugin. If a test uses `@denops/test`, it spawns \
+real Vim / Neovim processes rather than mocking them, so point it at the \
+`DENOPS_TEST_VIM_EXECUTABLE` / `DENOPS_TEST_NVIM_EXECUTABLE` env vars — already \
+exported by `verify.e2e` and `verify.gate` — instead of a hardcoded editor path.
+"""
