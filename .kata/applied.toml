@@ -1,5 +1,5 @@
 preset = "github.com/yukimemi/pj-presets:denops"
-applied_at = "2026-10-19T03:34:33.844438028Z"
+applied_at = "2026-10-20T03:31:42.707510301Z"
 
 [[templates]]
 source = "github.com/yukimemi/pj-base"
@@ -8,7 +8,7 @@ version = "0.18.0"
 
 [[templates]]
 source = "github.com/yukimemi/pj-denops"
-rev = "c94348f3439b0fe4ff9d38bbc9222376e05e26f7"
+rev = "1620f1bbfe781752008afeb5f9265a520a0c8738"
 version = "0.1.0"
 
 [files.".agents/skills/renri/SKILL.md"]
@@ -30,7 +30,7 @@ content_hash = "6d380d1ecc2f882c2011429d548a6f3c774b74f0c757d884453e4667172acc2a
 content_hash = "0ac5ed2847ab6e1041e34209dcc2396a582722ea9537d03bd950e1db1851a4b7"
 
 [files.".github/workflows/ci.yml"]
-content_hash = "769423d4f269bbade161eb45e1ce676bd47de30e71cb82f5b93712103f7ec8f8"
+content_hash = "9410dc393f046963a9058eab44beed64197adc64692071433a9d9e71959d1315"
 
 [files.".github/workflows/claude-review.yml"]
 content_hash = "4a8e47aabb3cdf2a59030d5194467022f0efb53bb1819d4495752020d10be773"
